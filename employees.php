@@ -46,7 +46,11 @@ $status=$_POST['employment_status'];
 $date=$_POST['date_hired'];
 $type=$_POST['salary_type'];
 $salary=$_POST['salary_amount'];
-$con=$_POST['contact_no'];
+$con = $_POST['contact_no'];
+
+if (!preg_match('/^[0-9]{11}$/', $con)) {
+    die("Contact number must be exactly 11 digits.");
+}
 
 $stmt=$conn->prepare("INSERT INTO employees
 (full_name,position,department,employment_status,date_hired,salary_type,salary_amount,contact_no)
@@ -425,7 +429,7 @@ title="Delete"
 
 <div class="mb-3">
 <label>Contact</label>
-<input type="text" name="contact_no" class="form-control">
+<input type="text" name="contact_no" class="form-control" maxlength="11" pattern="[0-9]{11}" required>
 </div>
 
 </div>
@@ -479,7 +483,7 @@ Save Employee
 </select>
 
 <input type="number" name="salary_amount" id="edit_salary" class="form-control mb-2">
-<input type="text" name="contact_no" id="edit_contact" class="form-control mb-2">
+<input type="text" name="contact_no" id="edit_contact" class="form-control mb-2" maxlength="11" pattern="[0-9]{11}" required>
 
 </div>
 
