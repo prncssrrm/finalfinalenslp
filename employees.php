@@ -4,8 +4,33 @@ include 'config.php';
 require_once 'access_control.php';
 check_access(['admin']);
 
+// TOTAL EMPLOYEES (with filter)
+$count_sql = "SELECT COUNT(*) as total FROM employees WHERE 1";
+
+if(!empty($q)){
+    $count_sql .= " AND full_name LIKE :q ";
+}
+
+if(!empty($dept)){
+    $count_sql .= " AND department = :dept ";
+}
+
+$count_stmt = $conn->prepare($count_sql);
+
+if(!empty($q)){
+    $count_stmt->bindValue(':q', "%$q%");
+}
+
+if(!empty($dept)){
+    $count_stmt->bindParam(':dept', $dept);
+}
+
+$count_stmt->execute();
+$totalEmployees = $count_stmt->fetch()['total'];
+
 $q = trim($_GET['q'] ?? '');
 $dept = $_GET['dept'] ?? '';
+$search = "%".$q."%";
 
 function money2($n){ return number_format((float)$n, 2); }
 
@@ -151,13 +176,16 @@ border:none;
 
 <div class="card-body">
 
-<form method="GET" class="mb-3 d-flex gap-2">
+<div class="row mb-3 align-items-center">
 
-<input type="text" name="q" class="form-control w-25"
+<div class="col-md-8">
+<form method="GET" class="d-flex gap-2">
+
+<input type="text" name="q" class="form-control"
 placeholder="Search name..."
 value="<?= htmlspecialchars($q) ?>">
 
-<select name="dept" class="form-control w-25">
+<select name="dept" class="form-control">
     <option value="">All Departments</option>
     <option value="Accounting" <?= ($dept=='Accounting')?'selected':'' ?>>Accounting</option>
     <option value="Engineering" <?= ($dept=='Engineering')?'selected':'' ?>>Engineering</option>
@@ -170,7 +198,20 @@ value="<?= htmlspecialchars($q) ?>">
 <button class="btn btn-primary">Filter</button>
 
 </form>
+</div>
 
+<div class="col-md-4 text-end">
+
+<div class="bg-light p-2 rounded shadow-sm d-inline-block">
+<small class="text-muted">Total Employees</small><br>
+<strong style="font-size:18px;">
+<?=$totalEmployees?>
+</strong>
+</div>
+
+</div>
+
+</div>
 
 <div class="table-responsive">
 
@@ -202,6 +243,8 @@ if(!empty($q)){
 if(!empty($dept)){
     $sql .= " AND department = :dept ";
 }
+
+
 
 $sql .= " ORDER BY id DESC";
 
