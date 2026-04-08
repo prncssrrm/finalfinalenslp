@@ -117,6 +117,24 @@ padding:25px;
 margin-top:75px;
 }
 
+.table td, .table th{
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.table th{
+    white-space: nowrap;
+}
+
+.btn-edit, .btn-delete{
+    width:32px;
+    height:32px;
+    padding:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
 /* CARD */
 .card{
 border-radius:8px;
@@ -278,11 +296,11 @@ while($row=$stmt->fetch()){
 <td>₱ <?=money2($row['salary_amount'])?></td>
 <td><?=$row['contact_no']?></td>
 
-<td>
+<td class="text-center">
 
 <button
 type="button"
-class="btn btn-edit btn-sm"
+class="btn btn-edit btn-sm me-1"
 data-bs-toggle="modal"
 data-bs-target="#editModal"
 data-id="<?=$row['id']?>"
@@ -294,16 +312,17 @@ data-date="<?=$row['date_hired']?>"
 data-type="<?=$row['salary_type']?>"
 data-salary="<?=$row['salary_amount']?>"
 data-contact="<?=$row['contact_no']?>"
+title="Edit"
 >
-Edit
+<i class="bi bi-pencil"></i>
 </button>
 
-<a href="?delete=<?=$row['id']?>" 
-onclick="return confirm('Delete employee?')" 
-class="btn btn-delete btn-sm">
-
-Delete
-
+<a href="?delete=<?=$row['id']?>"
+onclick="return confirm('Delete employee?')"
+class="btn btn-delete btn-sm"
+title="Delete"
+>
+<i class="bi bi-trash"></i>
 </a>
 
 </td>
