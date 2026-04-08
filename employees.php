@@ -5,6 +5,8 @@ require_once 'access_control.php';
 check_access(['admin']);
 
 // TOTAL EMPLOYEES (with filter)
+$q = trim($_GET['q'] ?? '');
+$dept = $_GET['dept'] ?? '';
 $count_sql = "SELECT COUNT(*) as total FROM employees WHERE 1";
 
 if(!empty($q)){
@@ -90,6 +92,7 @@ $stmt->execute([$id]);
 header("Location: employees.php");
 exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -277,11 +280,21 @@ while($row=$stmt->fetch()){
 
 <td>
 
-<button 
+<button
+type="button"
 class="btn btn-edit btn-sm"
 data-bs-toggle="modal"
-data-bs-target="#edit<?=$row['id']?>">
-
+data-bs-target="#editModal"
+data-id="<?=$row['id']?>"
+data-name="<?=$row['full_name']?>"
+data-position="<?=$row['position']?>"
+data-dept="<?=$row['department']?>"
+data-status="<?=$row['employment_status']?>"
+data-date="<?=$row['date_hired']?>"
+data-type="<?=$row['salary_type']?>"
+data-salary="<?=$row['salary_amount']?>"
+data-contact="<?=$row['contact_no']?>"
+>
 Edit
 </button>
 
@@ -300,89 +313,7 @@ Delete
 
 <!-- EDIT MODAL -->
 
-<div class="modal fade" id="edit<?=$row['id']?>">
 
-<div class="modal-dialog">
-
-<form method="POST" class="modal-content">
-
-<input type="hidden" name="employee_id" value="<?=$row['id']?>">
-
-<div class="modal-header">
-
-<h5>Edit Employee</h5>
-
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
-</div>
-
-<div class="modal-body">
-
-<div class="mb-3">
-<label>Name</label>
-<input type="text" name="full_name" class="form-control" value="<?=$row['full_name']?>" required>
-</div>
-
-<div class="mb-3">
-<label>Position</label>
-<input type="text" name="position" class="form-control" value="<?=$row['position']?>">
-</div>
-
-<div class="mb-3">
-<label>Department</label>
-<input type="text" name="department" class="form-control" value="<?=$row['department']?>">
-</div>
-
-<div class="mb-3">
-<label>Status</label>
-<select name="employment_status" class="form-control">
-
-<option <?=$row['employment_status']=="Regular"?'selected':''?>>Regular</option>
-<option <?=$row['employment_status']=="Probationary"?'selected':''?>>Probationary</option>
-<option <?=$row['employment_status']=="Contractual"?'selected':''?>>Contractual</option>
-<option <?=$row['employment_status']=="Part-time"?'selected':''?>>Part-time</option>
-
-</select>
-</div>
-
-<div class="mb-3">
-<label>Date Hired</label>
-<input type="date" name="date_hired" class="form-control" value="<?=$row['date_hired']?>">
-</div>
-
-<div class="mb-3">
-<label>Salary Type</label>
-<select name="salary_type" class="form-control">
-
-<option <?=$row['salary_type']=="Daily"?'selected':''?>>Daily</option>
-<option <?=$row['salary_type']=="Monthly"?'selected':''?>>Monthly</option>
-
-</select>
-</div>
-
-<div class="mb-3">
-<label>Salary Amount</label>
-<input type="number" name="salary_amount" class="form-control" value="<?=$row['salary_amount']?>">
-</div>
-
-<div class="mb-3">
-<label>Contact</label>
-<input type="text" name="contact_no" class="form-control" value="<?=$row['contact_no']?>">
-</div>
-
-</div>
-
-<div class="modal-footer">
-
-<button type="submit" name="update_employee" class="btn btn-primary">
-Update
-</button>
-
-</div>
-
-</form>
-
-</div>
 
 </div>
 
@@ -495,6 +426,53 @@ Save Employee
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="modal fade" id="editModal">
+<div class="modal-dialog">
+
+<form method="POST" action="employees.php" class="modal-content">
+
+<input type="hidden" name="employee_id" id="edit_id">
+
+<div class="modal-header">
+<h5>Edit Employee</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<input type="text" name="full_name" id="edit_name" class="form-control mb-2">
+<input type="text" name="position" id="edit_position" class="form-control mb-2">
+<input type="text" name="department" id="edit_dept" class="form-control mb-2">
+
+<select name="employment_status" id="edit_status" class="form-control mb-2">
+<option>Regular</option>
+<option>Probationary</option>
+<option>Contractual</option>
+<option>Part-time</option>
+</select>
+
+<input type="date" name="date_hired" id="edit_date" class="form-control mb-2">
+
+<select name="salary_type" id="edit_type" class="form-control mb-2">
+<option>Daily</option>
+<option>Monthly</option>
+</select>
+
+<input type="number" name="salary_amount" id="edit_salary" class="form-control mb-2">
+<input type="text" name="contact_no" id="edit_contact" class="form-control mb-2">
+
+</div>
+
+<div class="modal-footer">
+<button type="submit" name="update_employee" class="btn btn-primary">Update</button>
+</div>
+
+</form>
+
+</div>
+</div>
+
 <script>
 function updateDepartment() {
     const position = document.getElementById("position").value;
@@ -524,6 +502,26 @@ function updateDepartment() {
         department.innerHTML += `<option value="${dep}">${dep}</option>`;
     });
 }
+</script>
+
+<script>
+const editModal = document.getElementById('editModal');
+
+editModal.addEventListener('show.bs.modal', function(event){
+
+let btn = event.relatedTarget;
+
+document.getElementById('edit_id').value = btn.dataset.id;
+document.getElementById('edit_name').value = btn.dataset.name;
+document.getElementById('edit_position').value = btn.dataset.position;
+document.getElementById('edit_dept').value = btn.dataset.dept;
+document.getElementById('edit_status').value = btn.dataset.status;
+document.getElementById('edit_date').value = btn.dataset.date;
+document.getElementById('edit_type').value = btn.dataset.type;
+document.getElementById('edit_salary').value = btn.dataset.salary;
+document.getElementById('edit_contact').value = btn.dataset.contact;
+
+});
 </script>
 
 <?php include 'footer.php'; ?>
